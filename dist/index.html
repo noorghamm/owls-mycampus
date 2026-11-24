@@ -4,14 +4,21 @@
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="theme-color" content="#102624"><meta name="description" content="Fly Rowan across Glasgow, stamp your lecture passes and find your school contacts. A student-made campus game.">
   <title>Owls MyCampus · Glasgow Uni</title>
-  <link rel="icon" href="art/rowan.svg"><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="realm.css"><link rel="stylesheet" href="registration.css">
+  <link rel="icon" href="art/rowan.svg"><link rel="stylesheet" href="style.css?v=9bbce025"><link rel="stylesheet" href="realm.css?v=b5d3014b"><link rel="stylesheet" href="registration.css?v=897d3cc0">
 </head>
 <body>
   <a class="skip" href="#content">Skip to content</a>
-  <header class="bar"><a class="brand" href="#schedule"><img width="34" height="34" src="art/rowan.svg" alt=""><span>Owls MyCampus</span></a><nav aria-label="Campus destinations"><a href="#schedule">Timetable</a><a href="#flight">Campus map</a><a href="#houses">Houses</a><a href="#common-room">Common room</a><a href="#league">Broom Cup</a><a href="#registration">Registration</a><a href="#courses">Courses</a></nav><span class="university">GLASGOW UNI</span></header>
+  <header class="bar">
+    <a class="brand" href="#schedule"><img width="40" height="40" src="art/rowan.svg" alt=""><span>Owls MyCampus</span></a>
+    <button class="campus-menu" type="button" aria-controls="campus-nav" aria-expanded="false"><span aria-hidden="true"></span>Menu</button>
+    <nav id="campus-nav" aria-label="Campus destinations">
+      <a href="#schedule">Timetable</a><a href="#flight">Campus map</a><a href="#houses">Houses</a><a href="#common-room">Common room</a><a href="#league">Broom Cup</a><a href="#registration">Registration</a><a href="#courses">Courses</a>
+    </nav>
+    <span class="university">Glasgow Uni</span>
+  </header>
   <main id="content" tabindex="-1"></main>
   <footer><span>Owls MyCampus</span><span>Sample student record · Saved on this device</span></footer>
   <dialog id="panel" aria-labelledby="dialog-title"><button class="close" aria-label="Close dialog">×</button><div id="panel-body"></div></dialog>
   <div id="notice" class="toast" role="status"></div>
-  <script type="module" src="app.js"></script>
+  <script type="module" src="app.js?v=7fd91579"></script>
 </body></html>

@@ -42,12 +42,15 @@ export function registrationPage(state){
   const headings=['The Sorting Hat','Your college is Science &amp; Engineering','Your contact details','Academic declaration','Financial registration','Your registration receipt'];
   const buttons=['Meet the hat','Confirm programme','Review my details','Complete academic practice','Finish practice registration'];
   const rail=steps.map((s,i)=>'<li><button type="button" data-reg-step="'+i+'" '+(i>r.last?'disabled':'')+(i===r.step?' aria-current="step"':'')+'><span>'+(i<r.last?'✓':i+1)+'</span>'+s+'</button></li>').join('');
-  return '<section class="reg"><header class="reg-head"><div><p class="overline">Glasgow Uni · 2026–27</p><h1>My registration</h1></div>'+link(portal,'Open official MyCampus','outline')+'</header><div class="reg-layout"><aside class="reg-rail"><div class="reg-hat"><img src="art/pixel-sorting-hat.png" alt="A crooked blue sorting hat with a bronze brim"></div><h2>Registration roll</h2><ol>'+rail+'</ol></aside><article class="reg-paper"><p class="reg-kicker">Practice record · '+(r.step===0?'Arrival':r.step===5?'Complete':'Step '+r.step+' of 4')+'</p><h2 id="reg-title" tabindex="-1">'+headings[r.step]+'</h2><form id="reg-form" autocomplete="off">'+body(r)+'<div class="reg-actions">'+(r.step===5?'<a class="button" href="#courses">Go to course enrolment</a>':'<button class="button" type="submit">'+buttons[r.step]+' →</button>')+(r.step>0&&r.step<5?'<button type="button" class="quiet" data-reg-step="'+(r.step-1)+'">Back</button>':'')+'</div></form><div class="reg-folio">Practice progress saves on this device. Submit official details in MyCampus.</div></article></div></section>';
+  const stepOptions=steps.map((s,i)=>'<option value="'+i+'" '+(i>r.last?'disabled ':'')+(i===r.step?'selected':'')+'>'+s+'</option>').join('');
+  return '<section class="reg"><header class="reg-head"><div><p class="overline">Glasgow Uni · 2026–27</p><h1>My registration</h1></div>'+link(portal,'Open official MyCampus','outline')+'</header><div class="reg-layout"><aside class="reg-rail"><div class="reg-hat"><img src="art/pixel-sorting-hat.png" alt="A crooked blue sorting hat with a bronze brim"></div><h2>Registration roll</h2><label class="reg-jump">Registration step<select>'+stepOptions+'</select></label><ol>'+rail+'</ol></aside><article class="reg-paper"><p class="reg-kicker">Practice record · '+(r.step===0?'Arrival':r.step===5?'Complete':'Step '+r.step+' of 4')+'</p><h2 id="reg-title" tabindex="-1">'+headings[r.step]+'</h2><form id="reg-form" autocomplete="off">'+body(r)+'<div class="reg-actions">'+(r.step===5?'<a class="button" href="#courses">Go to course enrolment</a>':'<button class="button" type="submit">'+buttons[r.step]+'</button>')+(r.step>0&&r.step<5?'<button type="button" class="quiet" data-reg-step="'+(r.step-1)+'">Back</button>':'')+'</div></form><div class="reg-folio">Practice progress saves on this device. Submit official details in MyCampus.</div></article></div></section>';
 }
 export function mountRegistration(main,state,save,render){
   const r=state.registration,form=main.querySelector('#reg-form');
-  const go=step=>{r.step=step;save();render();main.querySelector('#reg-title')?.focus({preventScroll:true})};
+  const go=step=>{r.step=step;save();render();main.querySelector('#reg-title').focus()};
   for(const b of main.querySelectorAll('[data-reg-step]'))b.addEventListener('click',()=>{const step=Number(b.dataset.regStep);if(step<=r.last)go(step)});
+  const jump=main.querySelector('.reg-jump select');
+  jump.addEventListener('change',()=>{const step=Number(jump.value);if(step<=r.last)go(step)});
   const syncDetails=()=>{
     if(r.step!==2)return;
     for(const key of Object.keys(defaults)){
@@ -61,6 +64,7 @@ export function mountRegistration(main,state,save,render){
       r.last=Math.min(r.last,r.step);
       if(r.step<=3)state.academic=false;
       state.finance=false;
+      for(const option of jump.options) option.disabled=Number(option.value)>r.last;
       for(const b of main.querySelectorAll('[data-reg-step]')){
         if(Number(b.dataset.regStep)>r.last){b.disabled=true;b.querySelector('span')?.replaceChildren(String(Number(b.dataset.regStep)+1))}
       }

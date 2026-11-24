@@ -1,9 +1,9 @@
-import {registrationRecord} from './registration.js';
+import {registrationRecord} from './registration.js?v=55ff2a24';
 import {bestScores} from './league.js';
 export const lectures = [
-  { name: 'Algorithmics', time: '09:00', end: '10:00', venue: 'Boyd Orr Building', short: 'Boyd Orr', room: 'Lecture Theatre A', topic: 'Search trees and traversal', x: 18, y: 37 },
-  { name: 'Human-Centred Design', time: '11:00', end: '12:00', venue: 'Sir Alwyn Williams Building', short: 'Alwyn Williams', room: 'Seminar Room 2', topic: 'Evaluating an interaction design', x: 52, y: 28 },
-  { name: 'Systems Programming', time: '14:00', end: '15:00', venue: 'James McCune Smith', short: 'James McCune Smith', room: 'Learning Studio 1', topic: 'Threads and shared memory', x: 77, y: 62 }
+  { id: 'algorithmics', name: 'Algorithmics', time: '09:00', end: '10:00', venue: 'Boyd Orr Building', short: 'Boyd Orr', room: 'Lecture Theatre A', topic: 'Search trees and traversal', x: 18, y: 37 },
+  { id: 'human-centred-design', name: 'Human-Centred Design', time: '11:00', end: '12:00', venue: 'Sir Alwyn Williams Building', short: 'Alwyn Williams', room: 'Seminar Room 2', topic: 'Evaluating an interaction design', x: 52, y: 28 },
+  { id: 'systems-programming', name: 'Systems Programming', time: '14:00', end: '15:00', venue: 'James McCune Smith', short: 'James McCune Smith', room: 'Learning Studio 1', topic: 'Threads and shared memory', x: 77, y: 62 }
 ];
 const schoolSupport = 'https://www.gla.ac.uk/schools/computing/informationforstudents/studentsupport/';
 export const contacts = [
