@@ -6,7 +6,8 @@ A playable Glasgow campus timetable. Steer Rowan the barn owl over an illustrate
 
 Run `npm start` and visit [the local game](http://127.0.0.1:4873/). This command uses Python 3. The game itself is static HTML, CSS and JavaScript in `dist/` and needs no build or package installation.
 
-- Choose **Fly to my next lecture**. Steer with arrow keys or WASD, or tap a point on the chart. **Guide me** flies to the destination automatically. Escape or **Land later** exits flight.
+- The timetable opens with the next unchecked class, room and day schedule. **Export calendar** downloads the three sample lectures for Apple Calendar or another calendar app.
+- Open **Campus map** and choose **Fly to next class**. Steer with arrow keys or WASD, or tap a point on the chart. **Guide me** flies to the destination automatically. Escape or **Land later** exits flight.
 - Open a pass from either the map or the timetable. The first stamp for each lecture earns 10 points. The third adds a 20-point full-flight bonus.
 - Catch golden moonfeathers in flight. Visit the Science & Engineering common room and give one to each adviser companion. Support links work from the start.
 - Pin a midday break, confirm the two registration seals, or add and drop the sample optional course.
