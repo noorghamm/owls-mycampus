@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160" viewBox="0 0 160 160" role="img"><title>A fox wearing a star clasp and carrying a green field journal</title><defs>
+  <linearGradient id="copper" x2=".7" y2="1" gradientUnits="objectBoundingBox"><stop stop-color="#f6b56c"/><stop offset=".5" stop-color="#c67543"/><stop offset="1" stop-color="#925039"/></linearGradient>
+  <linearGradient id="cream" x2=".7" y2="1"><stop stop-color="#fff4ce"/><stop offset="1" stop-color="#d8b88d"/></linearGradient>
+  <linearGradient id="coat" x2="1" y2="1"><stop stop-color="#90b3a0"/><stop offset="1" stop-color="#547767"/></linearGradient>
+  <linearGradient id="plum" x2="1" y2="1"><stop stop-color="#a87885"/><stop offset="1" stop-color="#745666"/></linearGradient>
+</defs>
+<g stroke="#493f3e" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+<path d="M64 133C39 144 7 130 8 101c0-18 7-24 4-39 21 11 34 25 31 42 8 0 22-5 33 0z" fill="url(#copper)"/>
+<path d="M12 62c17 10 22 18 25 27l-7-3 2 8-8-5-2 6c-9-6-12-14-10-22z" fill="url(#cream)"/>
+<path d="M50 135c-3-19 2-38 16-52l37 1c13 8 22 28 20 48-3 10-15 15-40 15-16 0-28-2-33-12z" fill="url(#copper)"/>
+<path d="M65 99l38-2 3 33-11 13-17-3z" fill="url(#cream)"/>
+<path d="M69 130q-4 16 2 18h13l-2-15m20-6q2 21 8 21h11q4-6-7-11" fill="#715142"/>
+<path d="M58 42Q45 27 46 10q22 6 34 23 18-6 30 1 8-16 25-21 0 24-10 43l7 9-8 1 7 7-13 3q-8 13-30 22-22-7-37-23l-10-3 8-7-9-2 10-10z" fill="url(#copper)"/>
+<path d="M53 20q13 9 20 18l-13 4zm62 17 13-15-5 23z" fill="#895650" stroke="none"/>
+<path d="M48 68q20-6 39 12 19-19 42-12l-10 9-4 1q-9 11-28 19-20-9-32-22z" fill="url(#cream)" stroke="none"/>
+<path d="M62 55q6-5 12-1m24-1q8-5 14 0" fill="none" stroke="#8a4b3b"/>
+<path d="M64 64q4-8 9-1m28 0q4-8 9-1" fill="none" stroke="#37383a" stroke-width="3.2"/>
+<path d="M81 78q6-2 13 0-2 7-7 8z" fill="#3b3c3a"/>
+<path d="M87 86v4m0 0-5 2m5-2 5 1" fill="none" stroke-width="1.3"/>
+<path d="M61 92q26 14 51 0l4 9q-28 17-56-1z" fill="#3a6559"/>
+<path d="m98 103 7 2-2 21-6-5-6 3z" fill="#537e68"/><path d="m85 98 2 4 5 1-4 3v5l-4-3-4 2 1-5-3-3 5-1z" fill="#dfb86f" stroke-width="1"/>
+<g transform="rotate(-13 100 125)"><path d="M90 111q5-2 23-1v24l-22 2z" fill="#284c49"/><path d="m93 111 1 23m4-16 10-1m-10 4 7-1" fill="none" stroke="#dcbc7d" stroke-width="1.2"/></g>
+<path d="M61 112q-4 12 9 16l13-1q4-4-1-7l-11-1m43-11q9 9 5 17l-5 4q-7 0-6-6l6-6" fill="#ad6746"/>
+<path d="m71 48 5-4m2 4 3-3m24 35-4 3" fill="none" stroke="#e9a66a" stroke-width="1.4"/>
+</g></svg>

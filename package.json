@@ -1,0 +1,7 @@
+{
+  "name": "owls-mycampus",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": { "test": "node --test", "start": "python3 -m http.server 4873 --bind 127.0.0.1 --directory dist" }
+}
