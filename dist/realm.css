@@ -1,0 +1,57 @@
+/* Celestial blue and hammered brass belong to the tower and its broom pitch. */
+.realm{--brass:#e7bd79;--moon:#c9d9ee;--night:#19223a;--rim:#5c6077;max-width:1420px;margin:0 auto;padding-bottom:12px}
+.realm-head{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:30px 0 24px}
+.realm-head h1{font-family:Georgia,serif;font-size:clamp(2.65rem,5.2vw,5.2rem);font-weight:500;color:#f4e7c7}
+.realm-head p:last-child{color:#cbd4d2;margin-top:7px}
+body:has(.realm){background:radial-gradient(ellipse at 35% 4%,#28374b,transparent 60%),#121d2b}
+.realm .outline,.realm .quiet{background:#26334b;color:#f4e6c8;border:1px solid #637087}
+.tower-grid,.cup-grid{display:grid;grid-template-columns:minmax(0,2.18fr) minmax(270px,.84fr);gap:20px;align-items:start}
+.tower-console,.pitch-console{overflow:hidden;border:1px solid #a68a5d;border-radius:8px;background:#1c2839;box-shadow:0 13px 35px #080b1750}
+.tower-scene,.pitch{position:relative;isolation:isolate;width:100%;aspect-ratio:16/9;background-color:#263852;background-position:center;background-size:100% 100%;image-rendering:pixelated;outline-offset:-3px!important}
+.tower-scene{background-image:url(art/pixel-tower.png);cursor:crosshair}
+.tower-scene:after{content:'';position:absolute;inset:5px;border:1px solid #dbc68f38;pointer-events:none}
+.tower-npc,.tower-player{position:absolute;top:var(--y);left:var(--x);transform:translate(-50%,-100%)}
+.tower-npc{padding:0;width:clamp(32px,7.5%,90px);height:19%;background:none;border:0;cursor:pointer;z-index:2;display:flex;align-items:center;justify-content:flex-end;flex-direction:column}
+.tower-npc img{width:100%;height:80%;object-fit:contain;filter:drop-shadow(1px 3px 0 #121423a0);image-rendering:pixelated}
+.tower-npc span{font:600 .78rem/1.2 var(--sans);padding:3px 6px;color:#fff0cd;background:#152039ec;border:1px solid #bca06a;white-space:nowrap;box-shadow:2px 2px 0 #0f1d2e}
+.tower-npc:is(:focus-visible,:hover,.nearby) span{background:#efd08d;color:#182435}
+.tower-player{left:44%;top:86%;width:6.5%;height:15%;object-fit:contain;pointer-events:none;z-index:3;filter:drop-shadow(2px 3px 0 #15202b99);image-rendering:pixelated}
+.walking{animation:tower-step .22s steps(2) infinite}
+@keyframes tower-step{50%{translate:0 -3px}}
+.tower-toolbar,.broom-controls{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:12px 16px;border-top:1px solid #8a7754;background:#1e293c}
+.tower-toolbar small,.flight-manual{color:#d0d6db}
+.realm button:disabled{opacity:.55;cursor:default}
+.keeper-directory,.cup-ledger{padding:20px 18px;color:#293345;background:linear-gradient(145deg,#f8efd7,#e4d6b4);border-radius:8px;border:1px solid #bca478}
+.keeper-directory h2,.cup-ledger h2{font:600 clamp(1.6rem,2.6vw,2.15rem)/1.15 Georgia,serif;margin:5px 0 14px}
+.keeper-entry{display:flex;align-items:center;gap:10px;width:100%;padding:10px 0;text-align:left;border:0;border-top:1px solid #b8ac91;color:#263349;background:transparent}
+.keeper-entry:hover{background:#e6dbbd}
+.keeper-entry img{width:45px;height:45px;object-fit:contain;image-rendering:pixelated}
+.keeper-entry b,.keeper-entry small,.tower-seal small{display:block}.keeper-entry small,.tower-seal small{color:#596054}.keeper-entry i{margin-left:auto;font-style:normal;color:#73613e}
+.tower-seal{border-top:1px solid #b8ac91;padding-top:12px;margin-top:6px}.tower-seal b{font:600 1.13rem Georgia,serif}
+.pixel-portrait{image-rendering:pixelated}
+.pitch{background-image:url(art/pixel-pitch.png);touch-action:none}
+.pitch canvas{position:absolute;inset:0;width:100%;height:100%;image-rendering:pixelated;pointer-events:none}
+.pitch-hud{position:absolute;top:10px;left:10px;right:10px;display:flex;align-items:flex-start;justify-content:space-between;gap:8px;pointer-events:none}
+.pitch-hud span{background:#13212ae8;color:#fdeac4;border:1px solid #b89b69;padding:4px 7px;font:600 .78rem/1.3 ui-monospace,monospace}
+.broom-controls{justify-content:flex-start}.broom-controls [data-lane]{min-width:44px}
+.flight-manual{margin:0;padding:0 16px 14px;font-size:.92rem;background:#1e293c}
+.race-result{margin:0;padding:12px 16px;border-top:1px solid #998558;background:#364139;color:#f8e5b4}
+.cup-ledger label{font-size:.84rem;font-weight:650;display:block}
+.cup-ledger select{width:100%;margin:5px 0 12px;padding:9px 6px;background:#f8efd7;color:#28364b;border:1px solid #90836a;border-radius:4px;font:inherit;color-scheme:light}
+.ledger-tabs{display:flex;gap:3px;border-bottom:1px solid #ada082}
+.ledger-tabs button{padding:7px 11px;border:0;border-bottom:3px solid transparent;color:#534f47;background:transparent}
+.ledger-tabs button[aria-pressed=true]{color:#283c61;border-color:#344b70;font-weight:700}
+.cup-ledger table{width:100%;border-collapse:collapse;font-size:.85rem;line-height:1.3}
+.cup-ledger caption{text-align:left;font-weight:600;padding:12px 0 8px}
+.cup-ledger th,.cup-ledger td{padding:7px 3px;text-align:right;border-bottom:1px solid #c5b89a;font-variant-numeric:tabular-nums}
+.cup-ledger th:first-child,.cup-ledger td:nth-child(2):not(:nth-last-child(3)){text-align:left}
+.cup-ledger tbody th{font-weight:550}
+.cup-ledger th i{width:6px;height:12px;display:inline-block;margin-right:5px;vertical-align:middle}
+.cup-ledger .home-team{background:#d9dccd}
+.cup-ledger p{margin:14px 0 0;font-size:.83rem;line-height:1.45;color:#54584b}
+@media(max-width:1050px){.bar{flex-wrap:wrap;gap:5px 22px}.bar nav{flex-wrap:nowrap;min-height:44px}.tower-grid,.cup-grid{grid-template-columns:minmax(0,1.7fr) minmax(245px,1fr);gap:13px}}
+@media(max-width:800px){.tower-grid,.cup-grid{grid-template-columns:1fr}.realm-head{align-items:flex-start;flex-direction:column;padding:22px 0 17px}.tower-toolbar,.broom-controls{padding:9px}.tower-npc span{font-size:.65rem}.tower-toolbar small{font-size:.77rem}.keeper-directory,.cup-ledger{padding:17px}.pitch-hud span{font-size:.67rem}.realm .button,.realm .outline,.realm .quiet{padding:8px 11px;min-height:39px}}
+@media(prefers-reduced-motion:reduce){.walking{animation:none}}
+
+
+.cup-progress{display:flex;align-items:center;justify-content:space-between;gap:12px;border-top:1px solid #687187;padding:10px 16px}.cup-progress b{font:600 1.05rem Georgia,serif;color:#e8cf9d}.cup-progress small{color:#c5ccdc}

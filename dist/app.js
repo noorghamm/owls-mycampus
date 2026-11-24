@@ -1,11 +1,16 @@
-import {lectures,companions,breaks,houses,featherSpots,saveKey,restore,points} from './data.js';
+import {registrationPage,mountRegistration} from './registration.js';
+import {lectures,contacts,breaks,houses,featherSpots,saveKey,restore,points} from './data.js';
 import {fly} from './flight.js';
+import {stations,exploreTower} from './tower.js';
+import {fixtures,teams,standings,homeTeam,seasonStandings,cupHonour} from './league.js';
+import {mountRace} from './broom.js';
 
 const main=document.querySelector('main'), dialog=document.querySelector('#panel'), body=document.querySelector('#panel-body');
 let raw;try{raw=localStorage.getItem(saveKey)}catch{}
 let state=restore(raw), stopFlight=null, toastTimer, audio, saveFailed=false;
+let leaveScene, fixtureIndex=0, ledger='houses';
 const actions=new Map();
-const pages=new Set(['schedule','houses','common-room','registration','courses','flight']);
+const pages=new Set(['schedule','houses','common-room','registration','courses','flight','league']);
 const nextStop=()=>lectures.findIndex((_,i)=>!state.stamps.includes(i));
 const page=()=>pages.has(location.hash.slice(1))?location.hash.slice(1):'schedule';
 const stampCount=()=>state.stamps.length;
@@ -67,7 +72,7 @@ function schedule(){
   const i=nextStop(),c=lectures[i],bp=state.breakIndex<0?'Plan your break':breaks[state.breakIndex];
   const rows=lectures.map(timetableRow).join('');
   const agenda='<section class="day-pass"><div class="pass-heading"><span class="micro">Tuesday, 24 November</span><h2>Today’s lectures</h2></div>'+rows+'<div class="pass-bottom"><small>'+stampCount()+' of 3 checked in</small>'+button(i<0?'View flight seal':'Check in for '+c.time,'check-next',()=>i<0?seal():pass(i),'outline')+'</div></section>';
-  return '<header class="page-head"><div><p class="overline">Glasgow Uni · Science & Engineering</p><h1>Owl Schedule</h1></div>'+button('Export calendar','export',calendarDownload,'quiet')+'</header><div class="chart-day"><section class="chart-wrap">'+chart()+'<div class="chart-action"><div><small>'+(c?'Next stop':'Flight complete')+'</small><b>'+(c?c.venue:'Gilmorehill')+'</b></div>'+button(c?'Fly with Rowan':'View seal','fly-next',()=>c?startFlight(i):seal())+'</div></section>'+agenda+'</div><section class="desk-strip"><button '+act('breaks',breakDialog)+'><small>Between lectures</small><b>'+bp+'</b></button><a href="#common-room"><img src="art/fox.svg" alt=""><span><small>Common room</small><b>School contacts</b></span></a><a href="#registration"><small>Registration</small><b>'+(Number(state.academic)+Number(state.finance))+' of 2 steps confirmed</b></a></section>';
+  return '<header class="page-head"><div><p class="overline">Glasgow Uni · Science & Engineering</p><h1>Owl Schedule</h1></div>'+button('Export calendar','export',calendarDownload,'quiet')+'</header><div class="chart-day"><section class="chart-wrap">'+chart()+'<div class="chart-action"><div><small>'+(c?'Next stop':'Flight complete')+'</small><b>'+(c?c.venue:'Gilmorehill')+'</b></div>'+button(c?'Fly with Rowan':'View seal','fly-next',()=>c?startFlight(i):seal())+'</div></section>'+agenda+'</div><section class="desk-strip"><button '+act('breaks',breakDialog)+'><small>Between lectures</small><b>'+bp+'</b></button><a href="#common-room"><img src="art/pixel-academic.png" alt=""><span><small>Common room</small><b>School contacts</b></span></a><a href="#registration"><small>Registration</small><b>'+(Number(state.academic)+Number(state.finance))+' of 2 practice sections complete</b></a></section>';
 
 }
 function flightView(){
@@ -107,24 +112,72 @@ function houseHall(){
   return intro('','College houses','Science & Engineering is your college.')+'<div class="keepers">'+houses.map((h,i)=>'<article class="banner" style="--house:'+colours[i]+'"><span class="sigil" aria-hidden="true">'+sigils[i]+'</span><h2>'+h+'</h2><p>'+(i===1?'Your house · Computing Science':'College house')+'</p>'+(i===1?'<a class="button" href="#common-room">Enter common room</a>':'')+'</article>').join('')+'</div>';
 }
 function commonRoom(){
-  return intro('Science & Engineering','School contacts','School of Computing Science')+'<div class="keepers">'+companions.map((c,i)=>'<article class="keeper"><img src="art/'+c.animal+'.svg" alt="'+c.name+', a '+c.animal+'"><h2>'+c.role+'</h2><p>'+c.detail+'</p>'+button('Contact details','keeper'+i,()=>keeper(i),'outline')+'</article>').join('')+'</div><div class="subnav"><a class="outline" href="#houses">House Hall</a><a class="quiet" href="#schedule">Return to Owl Schedule</a></div>';
+  const keepers=contacts.map((c,i)=>{
+    const spot=stations[i];
+    return '<button type="button" class="tower-npc" style="--x:'+spot.x+'%;--y:'+spot.y+'%" data-station="'+i+'" data-name="'+c.name+'" aria-label="Walk to '+c.name+', '+c.role+'"><span>'+c.short+'</span><img src="art/pixel-'+c.sprite+'.png" alt=""></button>';
+  }).join('');
+  const directory=contacts.map((c,i)=>'<button class="keeper-entry" '+act('talk'+i,()=>visitKeeper(i))+'><img src="art/pixel-'+c.sprite+'.png" alt=""><span><b>'+c.name+'</b><small>'+c.role+'</small></span><i aria-hidden="true">'+(state.met.includes(i)?'✦':'›')+'</i></button>').join('');
+  return '<section class="realm"><header class="realm-head"><div><p class="eyebrow">Science &amp; Engineering · Common room</p><h1>The Aerie</h1><p>Find the right person for a course change, an adjustment or a difficult week.</p></div><a class="outline" href="#league">Broom Cup pitch</a></header><div class="tower-grid"><div class="tower-console"><div class="tower-scene" tabindex="0" role="group" aria-label="Walkable common room. Use arrow keys or WASD to move and E to speak, or select a contact.">'+keepers+'<img class="tower-player" src="art/pixel-scholar.png" alt="Your scholar"></div><div class="tower-toolbar"><small>Tap to walk · Arrow keys to move · E to speak</small><button type="button" class="outline talk-prompt" disabled>Approach a contact</button></div></div><aside class="keeper-directory"><span class="micro">School &amp; college directory</span><h2>Student contacts</h2>'+directory+'<div class="tower-seal"><b>'+(state.met.length===4?'✦ Aerie crest earned':'The Aerie crest')+'</b><small>'+state.met.length+' of 4 contacts discovered</small></div></aside></div></section>';
+}
+function visitKeeper(i){
+  if(!state.met.includes(i)){
+    state.met.push(i);save();chime(state.met.length===4);
+    const badge=main.querySelector('.tower-seal');
+    if(badge){badge.querySelector('small').textContent=state.met.length+' of 4 contacts discovered';if(state.met.length===4)badge.querySelector('b').textContent='✦ Aerie crest earned'}
+    const mark=main.querySelector('[data-action="talk'+i+'"] i');if(mark)mark.textContent='✦';
+  }
+  keeper(i);
+}
+function cupBoard(){
+  const f=fixtures[fixtureIndex], rows=ledger==='season'?seasonStandings(state.broomBests):standings(fixtureIndex,state.broomBests);
+  if(ledger==='students'){
+    const students=teams.flatMap((t,i)=>t.students.map((name,j)=>({name,team:t.short,mark:f.marks[i][j]}))).sort((a,b)=>b.mark-a.mark||a.name.localeCompare(b.name));
+    return '<table><caption>Student league · sample assignment marks</caption><thead><tr><th>Student</th><th>College</th><th>Mark</th></tr></thead><tbody>'+students.map(st=>'<tr class="'+(st.name==='You'?'home-team':'')+'"><th>'+st.name+'</th><td>'+st.team+'</td><td>'+st.mark+'%</td></tr>').join('')+'</tbody></table>';
+  }
+  return '<table><caption>'+(ledger==='season'?'House standings · Full season':'House standings · '+f.short)+'</caption><thead><tr><th>House</th><th>Work</th><th>Flight</th><th>Total</th></tr></thead><tbody>'+rows.map(t=>'<tr class="'+(t.id===homeTeam?'home-team':'')+'"><th><i style="background:'+t.color+'"></i>'+t.short+'</th><td>'+t.coursework+'</td><td>'+t.flight+'</td><td><b>'+t.total+'</b></td></tr>').join('')+'</tbody></table>';
+}
+function league(){
+  const honour=cupHonour(state.broomBests);
+  const menu=fixtures.map((x,i)=>'<option value="'+i+'" '+(i===fixtureIndex?'selected':'')+'>'+x.name+'</option>').join('');
+  return '<section class="realm"><header class="realm-head"><div><p class="eyebrow">Intercollegiate broom racing</p><h1>The Gilmorehill Cup</h1><p>Five brass hoops and a winged comet. Ride for Science &amp; Engineering.</p></div><a class="outline" href="#common-room">Return to the Aerie</a></header><div class="cup-grid"><div class="pitch-console"><div class="pitch" tabindex="0" role="group" aria-label="Broom race. Steer with the up and down arrow keys, or touch the pitch. Space pauses."><canvas aria-hidden="true"></canvas><div class="pitch-hud"><span class="race-readout">Personal best · '+state.broomBests[fixtureIndex]+' / 30</span><span class="race-call" aria-live="polite">At the starting line</span></div></div><div class="broom-controls"><button class="button" data-race-start>Mount your broom</button><button class="quiet" data-race-pause disabled>Pause</button><button class="quiet" data-lane="-1" aria-label="Steer up">↑</button><button class="quiet" data-lane="1" aria-label="Steer down">↓</button></div><p class="flight-manual">Steer with ↑ and ↓ or drag on the pitch. Each hoop earns 4 points. Catch the comet for 10 more.</p><div class="race-result" role="status" hidden></div><div class="cup-progress"><b>'+(honour||'House pennant')+'</b><small>'+(honour?'Earned this season':'Score in all three fixtures · '+state.broomBests.filter(Boolean).length+' / 3')+'</small></div></div><aside class="cup-ledger"><span class="micro">Fixture ledger · Demo season</span><h2>League table</h2><label for="fixture">Assignment fixture</label><select id="fixture">'+menu+'</select><div class="ledger-tabs">'+['houses','students','season'].map(k=>'<button aria-pressed="'+(ledger===k)+'" '+act('ledger-'+k,()=>switchLedger(k))+'>'+ (k==='houses'?'Houses':k==='season'?'Season':'Students')+'</button>').join('')+'</div><div id="cup-board">'+cupBoard()+'</div><p>House total = average assignment mark + best flight. All marks are fictional. Replays count only when you beat your best.</p></aside></div></section>';
+}
+function switchLedger(k){
+  ledger=k;main.querySelector('#cup-board').innerHTML=cupBoard();
+  main.querySelectorAll('.ledger-tabs button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.action==='ledger-'+k)));
+}
+function finishRace(score,hoops,comet){
+  const old=state.broomBests[fixtureIndex];state.broomBests[fixtureIndex]=Math.max(old,score);save();chime(score>old);
+  const result=main.querySelector('.race-result');result.hidden=false;
+  result.textContent=hoops+' of 5 hoops · '+(comet?'Comet caught':'Comet missed')+' · '+score+' flight points. '+(score>old?'New house best!':'House best: '+old+'.');
+  main.querySelector('#cup-board').innerHTML=cupBoard();
+  const progress=main.querySelector('.cup-progress');
+  const honour=cupHonour(state.broomBests);
+  progress.querySelector('b').textContent=honour||'House pennant';
+  progress.querySelector('small').textContent=honour?'Earned this season':'Score in all three fixtures · '+state.broomBests.filter(Boolean).length+' / 3';
 }
 function keeper(i){
-  const c=companions[i],friend=state.friends.includes(i);
-  open(c.role,c.name+' · Common room','<img class="portrait" src="art/'+c.animal+'.svg" alt=""><p><b>'+c.title+'</b></p><p>'+c.detail+'</p><p class="dialog-body">'+(friend?c.quote:'Golden moonfeathers drift above the campus. Bring one back to befriend '+c.name+'.')+'</p><div class="actions"><a class="button" href="'+c.url+'" '+(c.url.startsWith('https')?'target="_blank" rel="noopener noreferrer"':'')+'>'+c.action+'</a>'+(friend?'<span class="chip">✦ Befriended</span>':spare()?button('Offer one feather','gift',()=>{if(spare()&&!state.friends.includes(i)){state.friends.push(i);save();chime();render();keeper(i)}},'outline'):button('Find feathers','find',()=>{close();location.hash='flight'},'outline'))+'</div>');
-}
-function registration(){
-  const count=Number(state.academic)+Number(state.finance);
-  return intro('2026–27','Registration','Check your programme and funding details.', '<div class="stat"><strong>'+count+' / 2</strong><small>Confirmed</small></div>')+'<div class="grid">'+[['academic','Academic registration','Programme','Software Engineering BSc (Hons)','School','Computing Science'],['finance','Financial registration','Fee record','Example funding arrangement','Funding route','Sponsor recorded']].map(([k,title,a,av,b,bv])=>'<article class="paper-card"><span class="micro">'+(k==='academic'?'Academic record':'Funding record')+'</span><h2>'+title+'</h2><dl><dt>'+a+'</dt><dd>'+av+'</dd><dt>'+b+'</dt><dd>'+bv+'</dd></dl>'+(state[k]?'<b>✓ Confirmed</b>':button('Confirm example record','reg'+k,()=>{state[k]=true;save();chime();render();notify(title+' confirmed.')},'outline'))+'</article>').join('')+'</div>';
+  const c=contacts[i];
+  const external=(url,label,css='contact-link')=>'<a class="'+css+'" href="'+url+'" '+(url.startsWith('https:')?'target="_blank" rel="noopener noreferrer"':'')+'>'+label+'</a>';
+  const bookmarked=state.friends.includes(i);
+  const pin=bookmarked?'<span class="chip">✦ Feather bookmark</span>':spare()?button('Bookmark with one feather','bookmark',()=>{
+    if(!state.friends.includes(i)&&spare()){state.friends.push(i);save();chime();keeper(i)}
+  },'quiet'):'';
+  open(c.name,c.role,'<img class="portrait pixel-portrait" src="art/pixel-'+c.sprite+'.png" alt=""><p>'+c.detail+'</p><div class="actions">'+external(c.url,c.action,'button')+pin+'</div><div class="contact-sources">'+(c.extra?external(c.extra,c.extraLabel):'')+external(c.source,c.sourceLabel+' ↗')+'</div>');
 }
 function courses(){
   return intro('Semester 2','Course enrolment','School of Computing Science')+'<article class="paper-card"><span class="micro">Optional course · Semester 2</span><h2>Human–Computer Interaction</h2><p>20 credits · Computing Science · Lecture time to be confirmed</p><p><b>'+(state.enrolled?'✓ Enrolled':'Available to enrol')+'</b></p>'+button(state.enrolled?'Review course drop':'Add to my courses','course-action',()=>{if(state.enrolled){open('Drop this course?','Course satchel','<p>Removing Human–Computer Interaction removes 20 optional credits from your example record.</p><div class="actions">'+button('Keep course','keep',close)+button('Confirm drop','drop',()=>{state.enrolled=false;save();close();render();notify('Course removed.')},'outline')+'</div>')}else{state.enrolled=true;save();render();notify('20 credits added to your example course record.')}},'outline')+'</article>';
 }
 function render(){
-  stopFlight?.();stopFlight=null;actions.clear();
+  stopFlight?.();stopFlight=null;leaveScene?.();leaveScene=null;actions.clear();
   const key=page();
-  const views={schedule,flight:flightView,houses:houseHall,'common-room':commonRoom,registration,courses};
+  const views={schedule,flight:flightView,houses:houseHall,'common-room':commonRoom,league,registration:()=>registrationPage(state),courses};
   main.innerHTML=views[key]();
+  if(key==='registration')mountRegistration(main,state,save,render);
+  if(key==='common-room')leaveScene=exploreTower(main.querySelector('.tower-scene'),visitKeeper);
+  if(key==='league'){
+    main.querySelector('#fixture').addEventListener('change',e=>{fixtureIndex=Number(e.target.value);render()});
+    leaveScene=mountRace(main.querySelector('.pitch'),fixtureIndex,finishRace);
+  }
   document.querySelectorAll('nav a').forEach(a=>{if(a.hash==='#'+key)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current')});
 }
 render();
