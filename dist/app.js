@@ -43,7 +43,7 @@ function owlHome(){
 function chart(){
   const legs=['M7 76Q12 59 18 37','M18 37Q34 53 52 28','M52 28Q61 58 77 62'];
   const trails=legs.map((d,i)=>'<path class="trail '+(state.stamps.includes(i)?'done':'')+'" d="'+d+'"/>').join('');
-  const pins=lectures.map((c,i)=>'<button type="button" class="pin '+(state.stamps.includes(i)?'done':'')+'" style="--x:'+c.x+'%;--y:'+c.y+'%" aria-label="Open lecture pass for '+c.name+' at '+c.venue+'" '+act('pin'+i,()=>pass(i))+'>'+(state.stamps.includes(i)?'✓ ':'')+c.short+'</button>').join('');
+  const pins=lectures.map((c,i)=>'<button type="button" class="pin '+(state.stamps.includes(i)?'done':i===nextStop()?'next-stop':'')+'" style="--x:'+c.x+'%;--y:'+c.y+'%" aria-label="Open lecture pass for '+c.name+' at '+c.venue+'" '+act('pin'+i,()=>pass(i))+'>'+(state.stamps.includes(i)?'✓ ':'')+c.short+'</button>').join('');
   const motes=featherSpots.map(([x,y],i)=>state.feathers.includes(i)?'':'<i class="mote" aria-hidden="true" data-mote="'+i+'" style="--x:'+x+'%;--y:'+y+'%"></i>').join('');
   const loc=owlHome();
   return '<div class="atlas"><div class="atlas-top"><b>Gilmorehill flight chart</b><div class="map-controls"><small>Illustrated campus</small>'+button('♫ Sound '+(state.sound?'on':'off'),'sound',()=>{state.sound=!state.sound;save();chime();render()},'outline sound')+'</div></div><div class="map" role="group" aria-label="Interactive Glasgow campus flight chart"><svg aria-hidden="true" class="path-layer" viewBox="0 0 100 100" preserveAspectRatio="none">'+trails+'</svg>'+motes+pins+'<img class="owl-sprite perched" style="left:'+loc.x+'%;top:'+loc.y+'%" src="art/rowan.svg" alt="Rowan the barn owl"></div><div class="atlas-foot"><span>✦ &nbsp; '+(stampCount()===3?'All three lecture stops charted.':'Catch golden moonfeathers as you fly.')+'</span><small>'+state.feathers.length+' / 9 found</small></div></div>';
@@ -61,20 +61,21 @@ function calendarDownload(){
 }
 function timetableRow(c,i){
   const done=state.stamps.includes(i);
-  return '<button class="time-row" '+act('row'+i,()=>pass(i))+'><span class="slot"><b>'+c.time+'</b><small>'+c.end+'</small></span><span class="slot-detail"><b>'+c.name+'</b><small>'+c.venue+' · '+c.room+'</small></span><span class="row-end">'+(done?'✓':'›')+'</span></button>';
+  return '<button class="time-row '+(i===nextStop()?'next-row':'')+'" '+act('row'+i,()=>pass(i))+'><span class="slot"><b>'+c.time+'</b><small>'+c.end+'</small></span><span class="slot-detail"><b>'+c.name+'</b><small>'+c.venue+' · '+c.room+'</small></span><span class="row-end">'+(done?'✓':'›')+'</span></button>';
 }
 function schedule(){
   const i=nextStop(),c=lectures[i],bp=state.breakIndex<0?'Plan your break':breaks[state.breakIndex];
-  const next=c?'<div><span class="micro">Next to check in</span><h2>'+c.name+'</h2><p>'+c.time+'–'+c.end+' · '+c.venue+' · '+c.room+'</p></div>'+button('View class','next',()=>pass(i)):'<div><span class="micro">Attendance</span><h2>All three classes checked in</h2><p>50 points earned today.</p></div>'+button('View seal','next',seal);
-  const rows=lectures.map((c,i)=>timetableRow(c,i)+(i===1?'<button class="break-row" '+act('breaks',breakDialog)+'><span>12:00–14:00</span><b>'+bp+'</b><span>›</span></button>':'')).join('');
-  return '<header class="page-head"><div><p class="overline">My timetable</p><h1>Tuesday, 24 November</h1></div>'+button('Export calendar','export',calendarDownload,'quiet')+'</header><div class="today-grid"><div><section class="next-class">'+next+'</section><section class="agenda"><div class="section-head"><h2>Day schedule</h2><small>'+stampCount()+' / 3 checked in</small></div>'+rows+'</section></div><aside><a class="map-preview" href="#flight"><img src="art/campus-map.svg" alt="Illustrated map of Gilmorehill"><span><b>Campus map</b><small>Explore with Rowan &nbsp;›</small></span></a><section class="student-links"><h2>Student services</h2><a href="#common-room"><b>School contacts</b><small>Advisers and student support</small></a><a href="#registration"><b>Registration</b><small>'+(Number(state.academic)+Number(state.finance))+' of 2 steps complete</small></a><a href="#courses"><b>Course enrolment</b><small>Semester 2 · '+(state.enrolled?'20 optional credits':'Manage courses')+'</small></a></section></aside></div>';
+  const rows=lectures.map(timetableRow).join('');
+  const agenda='<section class="day-pass"><div class="pass-heading"><span class="micro">Tuesday, 24 November</span><h2>Today’s lectures</h2></div>'+rows+'<div class="pass-bottom"><small>'+stampCount()+' of 3 checked in</small>'+button(i<0?'View flight seal':'Check in for '+c.time,'check-next',()=>i<0?seal():pass(i),'outline')+'</div></section>';
+  return '<header class="page-head"><div><p class="overline">Glasgow Uni · Science & Engineering</p><h1>Owl Schedule</h1></div>'+button('Export calendar','export',calendarDownload,'quiet')+'</header><div class="chart-day"><section class="chart-wrap">'+chart()+'<div class="chart-action"><div><small>'+(c?'Next stop':'Flight complete')+'</small><b>'+(c?c.venue:'Gilmorehill')+'</b></div>'+button(c?'Fly with Rowan':'View seal','fly-next',()=>c?startFlight(i):seal())+'</div></section>'+agenda+'</div><section class="desk-strip"><button '+act('breaks',breakDialog)+'><small>Between lectures</small><b>'+bp+'</b></button><a href="#common-room"><img src="art/fox.svg" alt=""><span><small>Common room</small><b>School contacts</b></span></a><a href="#registration"><small>Registration</small><b>'+(Number(state.academic)+Number(state.finance))+' of 2 steps confirmed</b></a></section>';
+
 }
 function flightView(){
   const i=nextStop();
   return intro('','Campus map','Gilmorehill · Glasgow',stats())+'<div class="game-layout">'+chart()+'<section class="flight-list"><h2>Flight routes</h2>'+lectures.map((c,i)=>'<button class="route" '+act('route'+i,()=>startFlight(i))+'><b>'+c.short+'</b><small>'+c.name+'</small></button>').join('')+'<div class="actions">'+button(i<0?'View full-flight seal':'Fly to next class','flight-next',()=>i<0?seal():startFlight(i))+'</div></section></div>';
 }
 function startFlight(i){
-  close();if(page()!=='flight'){location.hash='flight';window.addEventListener('hashchange',()=>startFlight(i),{once:true});return;}
+  close();if(page()!=='flight'&&page()!=='schedule'){location.hash='flight';window.addEventListener('hashchange',()=>startFlight(i),{once:true});return;}
   stopFlight?.();const map=main.querySelector('.map');
   const target=lectures[i];
   notify('Fly to '+target.venue+'. Follow the glowing ring.');
