@@ -5,7 +5,7 @@ const main=document.querySelector('main'), dialog=document.querySelector('#panel
 let raw;try{raw=localStorage.getItem(saveKey)}catch{}
 let state=restore(raw), stopFlight=null, toastTimer, audio, saveFailed=false;
 const actions=new Map();
-const pages=new Set(['schedule','houses','common-room','registration','courses']);
+const pages=new Set(['schedule','houses','common-room','registration','courses','flight']);
 const nextStop=()=>lectures.findIndex((_,i)=>!state.stamps.includes(i));
 const page=()=>pages.has(location.hash.slice(1))?location.hash.slice(1):'schedule';
 const stampCount=()=>state.stamps.length;
@@ -48,17 +48,33 @@ function chart(){
   const loc=owlHome();
   return '<div class="atlas"><div class="atlas-top"><b>Gilmorehill flight chart</b><div class="map-controls"><small>Illustrated campus</small>'+button('♫ Sound '+(state.sound?'on':'off'),'sound',()=>{state.sound=!state.sound;save();chime();render()},'outline sound')+'</div></div><div class="map" role="group" aria-label="Interactive Glasgow campus flight chart"><svg aria-hidden="true" class="path-layer" viewBox="0 0 100 100" preserveAspectRatio="none">'+trails+'</svg>'+motes+pins+'<img class="owl-sprite perched" style="left:'+loc.x+'%;top:'+loc.y+'%" src="art/rowan.svg" alt="Rowan the barn owl"></div><div class="atlas-foot"><span>✦ &nbsp; '+(stampCount()===3?'All three lecture stops charted.':'Catch golden moonfeathers as you fly.')+'</span><small>'+state.feathers.length+' / 9 found</small></div></div>';
 }
-function day(){
-  const rows=lectures.map((c,i)=>'<button type="button" class="lecture" '+act('row'+i,()=>pass(i))+'><span class="wax '+(state.stamps.includes(i)?'stamped':'')+'">'+(state.stamps.includes(i)?'✓':'')+'</span><span><span class="lecture-time">'+c.time+' – '+c.end+'</span><span class="lecture-name">'+c.name+'</span><small>'+c.venue+'</small></span><span aria-hidden="true">›</span></button>').join('');
-  const i=nextStop();
-  return '<section class="day panel"><span class="micro">Tuesday · 24 November</span><h2>Today’s lectures</h2>'+rows+'<div class="progress"><small>'+stampCount()+' of 3 lecture passes stamped</small><div class="progress-line">'+lectures.map((_,j)=>'<i class="'+(state.stamps.includes(j)?'on':'')+'"></i>').join('')+'</div></div>'+button(i<0?'Open full-flight seal':'Fly to my next lecture','next',()=>i<0?seal():startFlight(i))+'</section>';
+function calendarDownload(){
+  const events=lectures.map(c=>[
+    'BEGIN:VEVENT','UID:20261124-'+c.code+'@owls-mycampus.local','DTSTAMP:20261124T000000Z',
+    'DTSTART:20261124T'+c.time.replace(':','')+'00Z','DTEND:20261124T'+c.end.replace(':','')+'00Z',
+    'SUMMARY:'+c.name,'LOCATION:'+c.venue+' — '+c.room,'DESCRIPTION:Sample Owls MyCampus timetable.','END:VEVENT'
+  ].join('\r\n'));
+  const calendar=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Owls MyCampus//Sample timetable//EN',...events,'END:VCALENDAR',''].join('\r\n');
+  const url=URL.createObjectURL(new Blob([calendar],{type:'text/calendar;charset=utf-8'}));
+  const link=document.createElement('a');link.href=url;link.download='glasgow-timetable-24-november.ics';
+  document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),30000);
+}
+function timetableRow(c,i){
+  const done=state.stamps.includes(i);
+  return '<button class="time-row" '+act('row'+i,()=>pass(i))+'><span class="slot"><b>'+c.time+'</b><small>'+c.end+'</small></span><span class="slot-detail"><b>'+c.name+'</b><small>'+c.venue+' · '+c.room+'</small></span><span class="row-end">'+(done?'✓':'›')+'</span></button>';
 }
 function schedule(){
-  const bp=state.breakIndex<0?'12:00–14:00 · Choose a plan':breaks[state.breakIndex];
-  return intro('Glasgow Uni  /  Science & Engineering','Owl Schedule','Three lectures. One little owl. Your day at Gilmorehill.',stats())+'<div class="layout">'+chart()+day()+'</div><section class="student-grid"><button class="pocket" '+act('breaks',breakDialog)+'><span class="eyebrow">Between lectures</span><b>Your midday break</b><small>'+bp+'</small></button><a class="pocket has-art" href="#common-room"><span class="eyebrow">Science & Engineering</span><b>Common room</b><small>'+state.friends.length+' of 4 companions befriended</small><img src="art/fox.svg" alt=""></a><a class="pocket" href="#registration"><span class="eyebrow">Student record</span><b>Registration seals</b><small>'+(Number(state.academic)+Number(state.finance))+' of 2 confirmed</small></a></section>';
+  const i=nextStop(),c=lectures[i],bp=state.breakIndex<0?'Plan your break':breaks[state.breakIndex];
+  const next=c?'<div><span class="micro">Next to check in</span><h2>'+c.name+'</h2><p>'+c.time+'–'+c.end+' · '+c.venue+' · '+c.room+'</p></div>'+button('View class','next',()=>pass(i)):'<div><span class="micro">Attendance</span><h2>All three classes checked in</h2><p>50 points earned today.</p></div>'+button('View seal','next',seal);
+  const rows=lectures.map((c,i)=>timetableRow(c,i)+(i===1?'<button class="break-row" '+act('breaks',breakDialog)+'><span>12:00–14:00</span><b>'+bp+'</b><span>›</span></button>':'')).join('');
+  return '<header class="page-head"><div><p class="overline">My timetable</p><h1>Tuesday, 24 November</h1></div>'+button('Export calendar','export',calendarDownload,'quiet')+'</header><div class="today-grid"><div><section class="next-class">'+next+'</section><section class="agenda"><div class="section-head"><h2>Day schedule</h2><small>'+stampCount()+' / 3 checked in</small></div>'+rows+'</section></div><aside><a class="map-preview" href="#flight"><img src="art/campus-map.svg" alt="Illustrated map of Gilmorehill"><span><b>Campus map</b><small>Explore with Rowan &nbsp;›</small></span></a><section class="student-links"><h2>Student services</h2><a href="#common-room"><b>School contacts</b><small>Advisers and student support</small></a><a href="#registration"><b>Registration</b><small>'+(Number(state.academic)+Number(state.finance))+' of 2 steps complete</small></a><a href="#courses"><b>Course enrolment</b><small>Semester 2 · '+(state.enrolled?'20 optional credits':'Manage courses')+'</small></a></section></aside></div>';
+}
+function flightView(){
+  const i=nextStop();
+  return intro('','Campus map','Gilmorehill · Glasgow',stats())+'<div class="game-layout">'+chart()+'<section class="flight-list"><h2>Flight routes</h2>'+lectures.map((c,i)=>'<button class="route" '+act('route'+i,()=>startFlight(i))+'><b>'+c.short+'</b><small>'+c.name+'</small></button>').join('')+'<div class="actions">'+button(i<0?'View full-flight seal':'Fly to next class','flight-next',()=>i<0?seal():startFlight(i))+'</div></section></div>';
 }
 function startFlight(i){
-  close();if(page()!=='schedule')return;
+  close();if(page()!=='flight'){location.hash='flight';window.addEventListener('hashchange',()=>startFlight(i),{once:true});return;}
   stopFlight?.();const map=main.querySelector('.map');
   const target=lectures[i];
   notify('Fly to '+target.venue+'. Follow the glowing ring.');
@@ -69,14 +85,14 @@ function startFlight(i){
 function pass(i,landed=false){
   const c=lectures[i],done=state.stamps.includes(i);
   open(c.name,landed?'Rowan has landed · Lecture pass':'Lecture pass · '+c.time+'–'+c.end,
-    '<p class="dialog-body"><b>'+c.venue+'</b><br>'+c.room+'</p><p>'+c.topic+'</p><hr><p class="demo-note">Sample check-in · Illustrative room assignment</p><div class="actions">'+(done?button('✓ Already stamped','done',close,'outline'):button('Stamp my pass · +10','stamp',()=>stamp(i)))+
+    '<p class="dialog-body"><b>'+c.venue+'</b><br>'+c.room+'</p><p>'+c.topic+'</p><hr><p class="demo-note">Sample check-in · Illustrative room assignment</p><div class="actions">'+(done?button('✓ Checked in','done',close,'outline'):button('Check in','stamp',()=>stamp(i)))+
     (!landed?button(done?'Fly this route again':'Fly to this building','fly-here',()=>startFlight(i),'outline'):'')+'</div>');
 }
 function stamp(i){
   if(state.stamps.includes(i)){close();return}
   state.stamps.push(i);save();chime(stampCount()===3);render();
   if(stampCount()===3){seal();return}
-  open('Lecture stamped','Owl post · '+lectures[i].short,'<div class="seal">✦</div><p class="center">Rowan delivered your '+lectures[i].name+' pass. <b>+10 flight points.</b></p><div class="actions center">'+button('Return to the chart','return',close)+'</div>');
+  open('Checked in',lectures[i].short,'<p class="center">'+lectures[i].name+' · <b>+10 points</b></p><div class="actions center">'+button('Done','return',close)+'</div>');
 }
 function seal(){
   open('A full flight','The Gilmorehill flight seal','<div class="seal"><img width="72" height="72" src="art/rowan.svg" alt="Rowan"></div><p class="center">All three lecture passes are stamped. <b>50 flight points</b> — 30 for your lectures and 20 for the complete route.</p><div class="actions center">'+button('Return to my schedule','return',close)+'</div>');
@@ -87,27 +103,27 @@ function breakDialog(){
 function chooseBreak(i){state.breakIndex=i;save();close();render();notify(i<0?'Your midday break is free.':'Break pinned to your schedule.')}
 function houseHall(){
   const sigils=['✎','△','❧','⚖'],colours=['#604158','#325942','#724a3f','#434d72'];
-  return intro('Glasgow Uni  /  College houses','The House Hall','Follow your college banner to the common room.')+'<div class="keepers">'+houses.map((h,i)=>'<article class="banner" style="--house:'+colours[i]+'"><span class="sigil" aria-hidden="true">'+sigils[i]+'</span><h2>'+h+'</h2><p>'+(i===1?'Your house · Computing Science':'College house')+'</p>'+(i===1?'<a class="button" href="#common-room">Enter common room</a>':'')+'</article>').join('')+'</div>';
+  return intro('','College houses','Science & Engineering is your college.')+'<div class="keepers">'+houses.map((h,i)=>'<article class="banner" style="--house:'+colours[i]+'"><span class="sigil" aria-hidden="true">'+sigils[i]+'</span><h2>'+h+'</h2><p>'+(i===1?'Your house · Computing Science':'College house')+'</p>'+(i===1?'<a class="button" href="#common-room">Enter common room</a>':'')+'</article>').join('')+'</div>';
 }
 function commonRoom(){
-  return intro('House of Science & Engineering','The common room','Meet the four keepers of your school. Each one knows a different kind of way forward.',stats())+'<div class="keepers">'+companions.map((c,i)=>'<article class="keeper"><img src="art/'+c.animal+'.svg" alt="'+c.name+', a '+c.animal+'"><span class="eyebrow">'+c.title+'</span><h2>'+c.name+'</h2><p>'+c.role+'</p>'+button('Visit '+c.name+(state.friends.includes(i)?' ✦':''),'keeper'+i,()=>keeper(i),'outline')+'</article>').join('')+'</div><div class="subnav"><a class="outline" href="#houses">House Hall</a><a class="quiet" href="#schedule">Return to Owl Schedule</a></div>';
+  return intro('Science & Engineering','School contacts','School of Computing Science')+'<div class="keepers">'+companions.map((c,i)=>'<article class="keeper"><img src="art/'+c.animal+'.svg" alt="'+c.name+', a '+c.animal+'"><h2>'+c.role+'</h2><p>'+c.detail+'</p>'+button('Contact details','keeper'+i,()=>keeper(i),'outline')+'</article>').join('')+'</div><div class="subnav"><a class="outline" href="#houses">House Hall</a><a class="quiet" href="#schedule">Return to Owl Schedule</a></div>';
 }
 function keeper(i){
   const c=companions[i],friend=state.friends.includes(i);
-  open(c.name+' the '+c.animal,'Common room · '+c.role,'<img class="portrait" src="art/'+c.animal+'.svg" alt=""><p><b>'+c.title+'</b></p><p>'+c.detail+'</p><p class="dialog-body">'+(friend?c.quote:'Golden moonfeathers drift above the campus. Bring one back to befriend '+c.name+'.')+'</p><div class="actions"><a class="button" href="'+c.url+'" '+(c.url.startsWith('https')?'target="_blank" rel="noopener noreferrer"':'')+'>'+c.action+'</a>'+(friend?'<span class="chip">✦ Befriended</span>':spare()?button('Offer one feather','gift',()=>{if(spare()&&!state.friends.includes(i)){state.friends.push(i);save();chime();render();keeper(i)}},'outline'):button('Find feathers','find',()=>{close();location.hash='schedule'},'outline'))+'</div>');
+  open(c.role,c.name+' · Common room','<img class="portrait" src="art/'+c.animal+'.svg" alt=""><p><b>'+c.title+'</b></p><p>'+c.detail+'</p><p class="dialog-body">'+(friend?c.quote:'Golden moonfeathers drift above the campus. Bring one back to befriend '+c.name+'.')+'</p><div class="actions"><a class="button" href="'+c.url+'" '+(c.url.startsWith('https')?'target="_blank" rel="noopener noreferrer"':'')+'>'+c.action+'</a>'+(friend?'<span class="chip">✦ Befriended</span>':spare()?button('Offer one feather','gift',()=>{if(spare()&&!state.friends.includes(i)){state.friends.push(i);save();chime();render();keeper(i)}},'outline'):button('Find feathers','find',()=>{close();location.hash='flight'},'outline'))+'</div>');
 }
 function registration(){
   const count=Number(state.academic)+Number(state.finance);
-  return intro('Student record  /  2026–27','Registration','Review your example student record and seal each section.', '<div class="stat"><strong>'+count+' / 2</strong><small>Seals confirmed</small></div>')+'<div class="grid">'+[['academic','Academic registration','Programme','Software Engineering BSc (Hons)','School','Computing Science'],['finance','Financial registration','Fee record','Example funding arrangement','Funding route','Sponsor recorded']].map(([k,title,a,av,b,bv])=>'<article class="paper-card"><span class="micro">'+(k==='academic'?'Programme seal':'Funding seal')+'</span><h2>'+title+'</h2><dl><dt>'+a+'</dt><dd>'+av+'</dd><dt>'+b+'</dt><dd>'+bv+'</dd></dl>'+(state[k]?'<b>✓ Seal confirmed</b>':button('Confirm example record','reg'+k,()=>{state[k]=true;save();chime();render();notify(title+' confirmed.')},'outline'))+'</article>').join('')+'</div>';
+  return intro('2026–27','Registration','Check your programme and funding details.', '<div class="stat"><strong>'+count+' / 2</strong><small>Confirmed</small></div>')+'<div class="grid">'+[['academic','Academic registration','Programme','Software Engineering BSc (Hons)','School','Computing Science'],['finance','Financial registration','Fee record','Example funding arrangement','Funding route','Sponsor recorded']].map(([k,title,a,av,b,bv])=>'<article class="paper-card"><span class="micro">'+(k==='academic'?'Academic record':'Funding record')+'</span><h2>'+title+'</h2><dl><dt>'+a+'</dt><dd>'+av+'</dd><dt>'+b+'</dt><dd>'+bv+'</dd></dl>'+(state[k]?'<b>✓ Confirmed</b>':button('Confirm example record','reg'+k,()=>{state[k]=true;save();chime();render();notify(title+' confirmed.')},'outline'))+'</article>').join('')+'</div>';
 }
 function courses(){
-  return intro('Student record  /  Course satchel','Course enrolment','Manage the optional course on your example Semester 2 record.')+'<article class="paper-card"><span class="micro">Optional course · Semester 2</span><h2>Human–Computer Interaction</h2><p>20 credits · Computing Science · Lecture time to be confirmed</p><p><b>'+(state.enrolled?'✓ Enrolled in your course satchel':'Available to enrol')+'</b></p>'+button(state.enrolled?'Review course drop':'Add to my courses','course-action',()=>{if(state.enrolled){open('Drop this course?','Course satchel','<p>Removing Human–Computer Interaction removes 20 optional credits from your example record.</p><div class="actions">'+button('Keep course','keep',close)+button('Confirm drop','drop',()=>{state.enrolled=false;save();close();render();notify('Course removed.')},'outline')+'</div>')}else{state.enrolled=true;save();render();notify('20 credits added to your example course record.')}},'outline')+'</article>';
+  return intro('Semester 2','Course enrolment','School of Computing Science')+'<article class="paper-card"><span class="micro">Optional course · Semester 2</span><h2>Human–Computer Interaction</h2><p>20 credits · Computing Science · Lecture time to be confirmed</p><p><b>'+(state.enrolled?'✓ Enrolled':'Available to enrol')+'</b></p>'+button(state.enrolled?'Review course drop':'Add to my courses','course-action',()=>{if(state.enrolled){open('Drop this course?','Course satchel','<p>Removing Human–Computer Interaction removes 20 optional credits from your example record.</p><div class="actions">'+button('Keep course','keep',close)+button('Confirm drop','drop',()=>{state.enrolled=false;save();close();render();notify('Course removed.')},'outline')+'</div>')}else{state.enrolled=true;save();render();notify('20 credits added to your example course record.')}},'outline')+'</article>';
 }
 function render(){
   stopFlight?.();stopFlight=null;actions.clear();
   const key=page();
-  const views={schedule,houses:houseHall,'common-room':commonRoom,registration,courses};
+  const views={schedule,flight:flightView,houses:houseHall,'common-room':commonRoom,registration,courses};
   main.innerHTML=views[key]();
-  document.querySelectorAll('nav a').forEach(a=>{if(a.hash==='#'+(key==='common-room'?'houses':key))a.setAttribute('aria-current','page');else a.removeAttribute('aria-current')});
+  document.querySelectorAll('nav a').forEach(a=>{if(a.hash==='#'+key)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current')});
 }
 render();
